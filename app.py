@@ -1,36 +1,34 @@
 import os
 
-from flask import Flask, jsonify, render_template, request
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, jsonify, request
+from flask_restful import Api, Resource
+from sqlalchemy import create_engine
 
+db_connect = create_engine('postgresql://postgres:postgres@localhost/motd')
 app = Flask(__name__)
 
-# connect to database
+# access the database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/motd'
-db = SQLAlchemy(app)
+api = Api(app)
 
-#create table and add columns
-class Greets(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True, nullable=False)
-    message = db.Column(db.String(150), unique=True, nullable=False)
-    image_file = db.Column(db.String(30), nullable=False, default='cat.jpg')
+class Greets(Resource):
+    def get(self):
+        conn = db_connect.connect() # connect to database
+        query = conn.execute("select * from greets") # query and returns json result
+        return {'msg': [i[0] for i in query.cursor.fetchall()]} # fetches first column
 
-    def __repr__(self):
-      return f"('{self.message}', '{self.name}', '{self.image_file}')"
-db.create_all()
+    def post(self):
+        conn = db_connect.connect()
+        print(request.json)
+        # to do: fix the typeError
+        name = request.json['name']
+        message = request.json['message']
+        query = conn.execute("insert into greets values(null,'{0}','{1}')".format(name, message))
+        return {'status':'success'}
 
-greets = [{'name': 'Simon', 'message': 'It makes a big difference in your life when you stay positive.'}, {'name': 'Bernhard', 'message': 'You are off to great places, today is your day.'}, {'name': 'Daniela', 'message': 'Live life to the fullest and focus on the positive.'}, {'name': 'Emilia', 'message': 'If opportunity does not knock, build a door.'},
-]
 
 # endpoint
-@app.route("/", methods=["GET", "POST",])
-def create():
-  greets_new = {'name': 'Andreas', 'message': 'When life gives you lemons make a lemonade.'}
-  greets.append(greets_new)
-  return jsonify( greets)
-    # return render_template('home.html', greets=greets)
-
+api.add_resource(Greets, '/v1/greets')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+  app.run(debug=True)
