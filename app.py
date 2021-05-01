@@ -1,34 +1,51 @@
-import os
-
 from flask import Flask, jsonify, request
-from flask_restful import Api, Resource
-from sqlalchemy import create_engine
+from flask_sqlalchemy import SQLAlchemy
 
-db_connect = create_engine('postgresql://postgres:postgres@localhost/motd')
 app = Flask(__name__)
-
-# access the database
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/motd'
-api = Api(app)
+app.debug = True
 
-class Greets(Resource):
-    def get(self):
-        conn = db_connect.connect() # connect to database
-        query = conn.execute("select * from greets") # query and returns json result
-        return {'msg': [i[0] for i in query.cursor.fetchall()]} # fetches first column
+db = SQLAlchemy(app)
 
-    def post(self):
-        conn = db_connect.connect()
-        print(request.json)
-        # to do: fix the typeError
-        name = request.json['name']
-        message = request.json['message']
-        query = conn.execute("insert into greets values(null,'{0}','{1}')".format(name, message))
-        return {'status':'success'}
+class c_greets(db.Model):
+  __tablename__ = 'greets'
+  name = db.Column(db.String(80), primary_key=True)
+  message = db.Column(db.String(), nullable=False)
+
+  def __init__(self, name, message):
+    self.name = name
+    self.message = message
 
 
-# endpoint
-api.add_resource(Greets, '/v1/greets')
+db.create_all()
+
+
+@app.route('/test', methods=['GET'])
+def test():
+  return {
+    'test': 'test'
+  }
+
+@app.route('/greets', methods=['GET'])
+def greets():
+  allGreets = c_greets.query.all()
+  output = []
+  for greet in allGreets:
+    newGreet = {}
+    newGreet['name'] = greet.name
+    newGreet['message'] = greet.message
+    output.append(newGreet)
+  return jsonify(output)
+
+@app.route('/api/v1/greet', methods=['POST'])
+def greetsNew():
+  greetsData = request.get_json()
+  newName = c_greets(name=greetsData['name'], message=greetsData['message'])
+  db.session.add(newName)
+  db.session.commit()
+  return jsonify(greetsData)
+
 
 if __name__ == '__main__':
   app.run(debug=True)
