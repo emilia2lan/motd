@@ -9,12 +9,11 @@ app.debug = True
 
 db = SQLAlchemy(app)
 session = Session()
-# creates two tables and joins on name column
 
+# creates two tables
 class c_names(db.Model):
   __tablename__ = 'names_t'
   name = db.Column(db.String(50), primary_key=True, nullable=False)
-
   def __init__(self, name):
     self.name = name
 
@@ -22,7 +21,6 @@ class c_greets(db.Model):
   __tablename__ = 'greets_t'
   name = db.Column(db.String(50), primary_key=True)
   message = db.Column(db.String())
-
   def __init__(self, name, message):
     self.name = name
     self.message = message
@@ -38,24 +36,25 @@ try:
 except:
   db.session.close()
 
-@app.route('/names', methods=['GET'])
-def names():
-  allNames = c_names.query.all()
-  output = []
-  for name in allNames:
-    newName = {}
-    newName['name'] = name.name
-    output.append(newName)
-  return jsonify(output)
 
 @app.route('/api/v1/greet', methods=['POST'])
 def namesNew():
+# post method in names_t
   namesData = request.get_json()
   newName = c_names(name=namesData['name'])
   db.session.add(newName)
   db.session.commit()
-  return jsonify(namesData)
 
+#get all the values from greets_t
+  allNames = c_greets.query.all()
+  output = []
+  for name in allNames:
+    newName = {}
+    newName['name'] = name.name
+    newName['message']=name.message
+    output.append(newName)
+
+  return jsonify(namesData, output)
 
 if __name__ == '__main__':
   app.run(debug=True)
