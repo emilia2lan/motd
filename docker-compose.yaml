@@ -2,22 +2,14 @@ version: '3.8'
 
 services:
   app:
-    build: .
+    build: ./app
     depends_on:
       - db
-    environment:
-      STAGE: motd
-      SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://motd:motd@db/motd
-    networks:
-      - default
     ports:
       - 5000:5000
 
   db:
-    environment:
-      POSTGRES_USER: motd
-      POSTGRES_PASSWORD: motd
-      POSTGRES_DB: motd
+    build: ./database
     image: postgres:latest
     networks:
       - default
