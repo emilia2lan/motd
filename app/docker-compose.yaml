@@ -1,21 +1,28 @@
 version: '3.8'
 
 services:
-  web:
-    build: ./
-    command: python app.py runserver 0.0.0.0:5000
-    volumes:
-      - ./app/:/projects/motd/app/
+  app:
+    build: .
+    depends_on:
+      - db
+    environment:
+      STAGE: motd
+      SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://motd:motd@db/motd
+    networks:
+      - default
     ports:
       - 5000:5000
-  db:
-    image: postgres:12.0-alpine
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_USER=motd
-      - POSTGRES_PASSWORD=motd
-      - POSTGRES_DB=motd
 
-volumes:
-  postgres_data:
+  db:
+    environment:
+      POSTGRES_USER: motd
+      POSTGRES_PASSWORD: motd
+      POSTGRES_DB: motd
+    image: postgres:latest
+    networks:
+      - default
+    ports:
+      - 5405:5432
+    restart: always
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data

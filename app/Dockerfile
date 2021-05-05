@@ -1,12 +1,7 @@
 # syntax=docker/dockerfile:1
 
-FROM python:3.8-alpine
-
+FROM python:3.8.10-buster
 WORKDIR /app
-RUN apk add postgresql-dev
-COPY requirements.txt requirements.txt
+ADD . /app
 RUN pip install -r requirements.txt
-
-COPY . .
-
-CMD [ "python", "-m" , "flask", "run", "--host=0.0.0.0"]
+CMD [ "python", "app.py"]

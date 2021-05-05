@@ -76,7 +76,7 @@ def namesNew():
   else:
    return username + result2[random.randint(0, 3)]['greets']
 
-  return json.dumps({"msg": msg}, output, something, username, separators =(" "))
+  return json.dumps({"msg": msg}, output, something, username, separators=" ")
 
 if __name__ == '__main__':
   app.run(debug=True)
