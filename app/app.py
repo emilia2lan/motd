@@ -22,17 +22,17 @@ class motd(db.Model):
 
 class u_greets(db.Model):
   __tablename__ = 'user_greeting'
-  user = db.Column(db.String(), primary_key=True)
+  user_name = db.Column(db.String(), primary_key=True)
   greeting = db.Column(db.String())
-  def __init__(self, user, greeting):
-    self.user = user
+  def __init__(self, user_name, greeting):
+    self.user_name = user_name
     self.greeting = greeting
 
 db.create_all()
 
 
 #insert multiple values in the two tables
-greets = [u_greets(user="Simon", greeting="Happiness is the only thing that multiplies when you share it."), u_greets(user="Bernhard", greeting="You are off to great places, today is your day."), u_greets(user="Daniela", greeting="Live life to the fullest and focus on the positive."), u_greets(user="Emilia", greeting="If opportunity does not knock, build a door."),u_greets(user="Cat", greeting="/cat.jpg")]
+greets = [u_greets(user_name="Simon", greeting="Happiness is the only thing that multiplies when you share it."), u_greets(user_name="Bernhard", greeting="You are off to great places, today is your day."), u_greets(user_name="Daniela", greeting="Live life to the fullest and focus on the positive."), u_greets(user_name="Emilia", greeting="If opportunity does not knock, build a door."),u_greets(user_name="Cat", greeting="/cat.jpg")]
 
 motd_list = [motd(greets="Welcome!"), motd(greets="How are you?"), motd(greets="Today is a good day!"), motd(greets="Nice to meet you!")]
 
@@ -53,7 +53,7 @@ def namesNew():
   output = []
   for user in allUsers:
     result = {}
-    result['user'] = user.user
+    result['user'] = user.user_name
     result['greeting']=user.greeting
     output.append(result)
 
